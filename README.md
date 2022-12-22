@@ -23,7 +23,7 @@ Tambien la licencia [OSHW](https://www.oshwa.org/definition/spanish/) y [GNU GEN
 
 ### Como conectar los pines
 
-![](/home/agustin/Proyectos/Arducky/IMG/Pro_micro.png)
+![Pro_micro](/home/agustin/Proyectos/Arducky/IMG/Pro_micro.png)
 
 > **NOTA:** Es recomendable que usemos los cables para protoboard así nos aseguramos las conexiones. Acá les dejo un [videos](https://www.youtube.com/watch?v=ksvo1WDYQ7s) de las conexiones y como usarlo.
 
