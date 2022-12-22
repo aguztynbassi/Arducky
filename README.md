@@ -1,3 +1,7 @@
+[TOC]
+
+
+
 # Arducky
 
 Es una herramienta de inyección de teclas disfrazada como una unidad flash genérica. Las computadoras lo reconocen como un teclado normal y aceptan cargas útiles de teclado preprogramadas a más de 1000 palabras por minuto.
@@ -11,8 +15,17 @@ Tambien la licencia [OSHW](https://www.oshwa.org/definition/spanish/) y [GNU GEN
 
 ## Hardware
 
-Podemos utilizar la placa de Arduino Pro Micro y el Modulo Micro SD
-Para eso podemos ver las coneciones en este link [ArDucky](https://nohaybackup.blogspot.com/2018/02/arducky.html)
+- [Arduino Pro Micro](http://dlnmh9ip6v2uc.cloudfront.net/datasheets/Dev/Arduino/Boards/ATMega32U4.pdf) (Leonardo) con un micro controlador ATmega32u4 (32KB flash y 2.5KB ram) con Bootloader
+- [Modulo Micro SD](https://cdn-learn.adafruit.com/downloads/pdf/adafruit-micro-sd-breakout-board-card-tutorial.pdf): nos permite insertar una memoria Micro SD que son las más comunes en el mercado, el modulo se puede alimentar con 3.3V o 5V usando los pines  respectivos. 
+- Una tarjeta Micro SD. 
+
+> **NOTA:** Vemos que el microcontrolador ATmega32u4 se puede encontrar en otras placas como el arduino uno o el arduino mini. 
+
+### Como conectar los pines
+
+![](/home/agustin/Proyectos/Arducky/IMG/Pro_micro.png)
+
+> **NOTA:** Es recomendable que usemos los cables para protoboard así nos aseguramos las conexiones. Acá les dejo un [videos](https://www.youtube.com/watch?v=ksvo1WDYQ7s) de las conexiones y como usarlo.
 
 ## Software
 
@@ -86,12 +99,18 @@ No es necesario, ya que el mismo software que se encuestra en el arduino se enca
 ## Utilizar
 
 * Guarda el payload que creaste con el nombre de script.txt
-* Guardalo en la tarjeta sd.
+* Guárdalo en la tarjeta sd.
 * Inserta tarjeta microsd en tu ArDucky.
-* Los [payloads](https://github.com/hak5darren/USB-Rubber-Ducky/wiki/Payloads) de Rubber Ducky tambien funcionan.
+* Los [payloads](https://github.com/hak5/usbrubberducky-payloads.git) de Rubber Ducky tambien funcionan.
+
+## Ejemplo de uso
+
+https://www.youtube.com/watch?v=prRtnkIW21M
+
+Este es un ejemplo básico de como extraer PDF's (o cualquier archivo), de una maquina a una USB auxiliar, por si la pc que se quiere extraer los archivos no cuenta con conexión a internet Como funciona.
 
 ## Descargar
 
 ```shell
-git clone https://gitlab.com/aguztynbassi/arducky.git
+git clone https://github.com/aguztynbassi/Arducky.git
 ```
