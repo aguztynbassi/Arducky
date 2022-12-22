@@ -1,7 +1,3 @@
-[TOC]
-
-
-
 # Arducky
 
 Es una herramienta de inyección de teclas disfrazada como una unidad flash genérica. Las computadoras lo reconocen como un teclado normal y aceptan cargas útiles de teclado preprogramadas a más de 1000 palabras por minuto.
@@ -23,7 +19,7 @@ Tambien la licencia [OSHW](https://www.oshwa.org/definition/spanish/) y [GNU GEN
 
 ### Como conectar los pines
 
-![Pro_micro](/home/agustin/Proyectos/Arducky/IMG/Pro_micro.png)
+![Pro_micro](https://user-images.githubusercontent.com/120866208/209189332-74987010-af15-45d6-921a-ea017662d1e7.png)
 
 > **NOTA:** Es recomendable que usemos los cables para protoboard así nos aseguramos las conexiones. Acá les dejo un [videos](https://www.youtube.com/watch?v=ksvo1WDYQ7s) de las conexiones y como usarlo.
 
