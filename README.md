@@ -36,7 +36,7 @@ Una vez abierto lo instalamos.
 * Descargamos el archivo
 * Descomprime el archivo descargado cuando quieras trabajar.
 * Abrir Arduino IDE
-* Abrir el archivo ducky_interpreter.ino
+* Abrir el archivo main.ino
 * Seleccione la placa Arduino Leonardo
 * Conecte la placa a su computadora
 * Incluimos la libreria keyboard.h
