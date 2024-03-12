@@ -1,14 +1,6 @@
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////// CONFIG SECTION //////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-
 //#define DEBUG_ON //Configure serial debug _WARNING:_ If debug is enabled script will start when serial monitor is opened
 #define BLINK_AT_END // Blink at end  or not
 #define SCRIPT_FILENAME "script.txt"
-
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
 
 #include <SPI.h>
 #include <SD.h>
@@ -25,13 +17,12 @@ unsigned long previous_line=0,current_line=0,next_line=0;
 long repeat_times=-1,tmp_repeat_times=0;
 
 //Functions
-void print_ram(void);
-int process_commad (char*);
-int str_start(char*,char const*);
-void process_string_commmand(void);
+void print_ram();
+int process_command(char*);
+int str_starts_with(char*, char const*);
+void process_string_command();
 
-void setup()
-{
+void setup() {
   int special_command=0;
   unsigned int i=0,j=0;
   
@@ -44,19 +35,17 @@ void setup()
   while (!Serial) {
     ; // wait for serial port to connect. Needed for native USB port only
   }
-  Serial.println(F("Rubber Ducky script interpreter for arduino"));
-  Serial.println(F("By Ernesto a.k.a. Xload"));
+  Serial.println(F("ArDucky script"));
   print_ram();
   #endif
 
-  
   //Set SD card CS pin as output
   pinMode(4, OUTPUT);
   
   //Initializing SD card
   if (!SD.begin(4)) {
     #ifdef DEBUG_ON
-    Serial.println(F("error beggining SD card"));
+    Serial.println(F("error beginning SD card"));
     #endif
   }
 
@@ -79,32 +68,27 @@ void setup()
       Serial.print("0x");
       Serial.println(readed_char,HEX);
       #endif
-      /*
-      if(readed_char=='\x0a'){ // If readed_char is LF process it
-        process_new_line();
-      }
-      */
       
       if(readed_char!='\x0d'){ // If readed_char is CR just ignore it (We only need LF for new line)
         command[i]=readed_char;
         command[i+1]='\x00'; // End string
         i++;
   
-        // First process commands that need read entire line
-        if(str_start(command,"STRING ")){
-            //Special case STRING
-            process_string_commmand();
+        // First process commands that need to read entire line
+        if(str_starts_with(command,"STRING ")) {
+            // Special case STRING
+            process_string_command();
             command[i-1]='\x00';
             command[0]='\x00';
             i=0;
         }
   
-        if(str_start(command,"REM ")){
-            //Special case REM
+        if(str_starts_with(command,"REM ")) {
+            // Special case REM
             #ifdef DEBUG_ON
             Serial.println(F("REM"));
             #endif
-            //Read till LF
+            // Read till LF
             while(!(readed_char=='\x0a')){
               readed_char=myFile.read();
             }
@@ -113,7 +97,7 @@ void setup()
             i=0;
         }
   
-        if (str_start(command,"DELAY ")){
+        if (str_starts_with(command,"DELAY ")) {
           #ifdef DEBUG_ON
           Serial.print(F("DELAY "));
           #endif
@@ -132,7 +116,7 @@ void setup()
           command[0]='\x00';
         }
 
-        if (str_start(command,"REPEAT ")){
+        if (str_starts_with(command,"REPEAT ")) {
           #ifdef DEBUG_ON
           Serial.println(F("REPEAT"));
           #endif
@@ -179,7 +163,7 @@ void setup()
         if (((readed_char==' ')||(readed_char=='+'))) {
           command[i-1]='\x00';
           if (strlen(command)>0){
-            process_commad(command);
+            process_command(command);
           }
           i=0;
         }
@@ -187,11 +171,10 @@ void setup()
         if ((readed_char=='\x0a')) {
           command[i-1]='\x00';
           if (strlen(command)>0){
-            process_commad(command);
-            releaseallkeys();
+            process_command(command);
+            release_all_keys();
             process_new_line();
           }
-          ///process_new_line();
           i=0;
         }
       }
@@ -205,9 +188,9 @@ void setup()
     myFile.close();
     command[i]='\x00';
     if (strlen(command)>0){
-      process_commad(command);
+      process_command(command);
     }
-    releaseallkeys();
+    release_all_keys();
   }
   else {
     // Error opening script.txt
@@ -216,13 +199,10 @@ void setup()
     Serial.println(F("error opening script.txt"));
     #endif
     while(1);
- 
   }
-  
 }
 
-void loop()
-{
+void loop() {
   #ifdef BLINK_AT_END
   digitalWrite(led, HIGH);
   delay(1500);
@@ -231,96 +211,85 @@ void loop()
   #endif
 }
 
-/*
- * All commands: https://github.com/hak5darren/USB-Rubber-Ducky/wiki/Duckyscript
- * TODO:
- * - NUMLOCK
- * - SCROLLLOCK
- * - DEFAULT_DELAY DEFAULTDELAY
- */
-
-int process_commad (char* command) {
+int process_command(char* command) {
   int i=0;
   #ifdef DEBUG_ON
-  Serial.println(F("Process_commad()"));
+  Serial.println(F("Process_command()"));
   Serial.print(F(" Command: \""));
   Serial.print(command);
   Serial.println("\"");
   #endif
 
-  // Modifer keys
-  
+  // Modifier keys
   // GUI or WINDOWS
   if (!strcmp(command,"WINDOWS")||!strcmp(command,"GUI")) {
     globalmodifiers=KEY_LEFT_GUI;
-    sendkey(0,KEY_LEFT_GUI);
+    send_key(0,KEY_LEFT_GUI);
     return 0;
   }
 
   // ALT
   if (!strcmp(command,"ALT")) {
-     sendkey(0,KEY_LEFT_ALT);
+     send_key(0,KEY_LEFT_ALT);
      return 0;
   }
 
   // CTRL
   if (!strcmp(command,"CTRL")) {
-     sendkey(0,KEY_LEFT_CTRL);
+     send_key(0,KEY_LEFT_CTRL);
      return 0;
   }
 
   // SHIFT
   if (!strcmp(command,"SHIFT")) {
-     sendkey(0,KEY_LEFT_SHIFT);
+     send_key(0,KEY_LEFT_SHIFT);
      return 0;
   }
 
-  
-  //Single keyboard keys
-  
-  //F1-F2 single stroke key
-  if (str_start(command,"F")) {
-    sendkey(KEY_F1+((atoi(command+1))-1),0);
+  // Single keyboard keys
+  // F1-F2 single stroke key
+  if (str_starts_with(command,"F")) {
+    send_key(KEY_F1+((atoi(command+1))-1),0);
     return 0;
   }
   
   if (!strcmp(command,"TAB")) {
-     sendkey(KEY_TAB,0);
+     send_key(KEY_TAB,0);
      return 0;
   }
   
   if (!strcmp(command,"LEFTARROW")||!strcmp(command,"LEFT")) {
-     sendkey(KEY_LEFT_ARROW,0);
+     send_key(KEY_LEFT_ARROW,0);
      return 0;
   }
   
   if (!strcmp(command,"RIGHTARROW")||!strcmp(command,"RIGHT")) {
-     sendkey(KEY_RIGHT_ARROW,0);
+     send_key(KEY_RIGHT_ARROW,0);
      return 0;
   }
   
   if (!strcmp(command,"UPARROW")||!strcmp(command,"UP")) {
-     sendkey(KEY_UP_ARROW,0);
+     send_key(KEY_UP_ARROW,0);
      return 0;
   }
   
   if (!strcmp(command,"DOWNARROW")||!strcmp(command,"DOWN")) {
-     sendkey(KEY_DOWN_ARROW,0);
+     send_key(KEY_DOWN_ARROW,0);
      return 0;
   }
 
   if (!strcmp(command,"PRINTSCREEN")) {
-     sendkey(KEY_PRINTSCREEN,0);
+     send_key(KEY_PRINTSCREEN,0);
      return 0;
   }
 
   if (!strcmp(command,"MENU")||!strcmp(command,"APP")) {
-    sendkey(KEY_MENU,0);
+    send_key(KEY_MENU,0);
     return 0;
   }
 
   if (!strcmp(command,"ENTER")) {
-    sendkey(KEY_RETURN,0);
+    send_key(KEY_RETURN,0);
     return 0;
   }
   
@@ -335,37 +304,37 @@ int process_commad (char* command) {
   }
 
   if (!strcmp(command,"ESC")||!strcmp(command,"ESCAPE")) {
-    sendkey(KEY_ESC,0);
+    send_key(KEY_ESC,0);
     return 0;
   }
 
   if (!strcmp(command,"HOME")) {
-    sendkey(KEY_HOME,0);
+    send_key(KEY_HOME,0);
     return 0;
   }
 
   if (!strcmp(command,"SPACE")) {
-    sendkey(' ',0);
+    send_key(' ',0);
     return 0;
   }
 
   if (!strcmp(command,"INSERT")) {
-    sendkey(KEY_INSERT,0);
+    send_key(KEY_INSERT,0);
     return 0;
   }
 
   if (!strcmp(command,"DELETE")) {
-    sendkey(KEY_DELETE,0);
+    send_key(KEY_DELETE,0);
     return 0;
   }
   
   if (!strcmp(command,"PAGEUP")) {
-    sendkey(KEY_PAGE_UP,0);
+    send_key(KEY_PAGE_UP,0);
     return 0;
   }
 
   if (!strcmp(command,"PAGEDOWN")) {
-    sendkey(KEY_PAGE_DOWN,0);
+    send_key(KEY_PAGE_DOWN,0);
     return 0;
   }
 
@@ -375,23 +344,18 @@ int process_commad (char* command) {
   }
 
   if (!strcmp(command,"END")) {
-    sendkey(KEY_END,0);
+    send_key(KEY_END,0);
     return 0;
   }
 
   for(i=0;i<strlen(command);i++){
-    sendkey(command[i],0);
+    send_key(command[i],0);
   }
-/*
-  if (strlen(command)==1) {
-    sendkey(command[0],0);
-  }
-*/
   
   return 1;
 }
 
-void process_string_commmand(void){
+void process_string_command(void){
   #ifdef DEBUG_ON
   Serial.print(F("STRING "));
   #endif
@@ -409,7 +373,7 @@ void process_string_commmand(void){
   process_new_line();
 }
 
-void sendkey(int key, int modifiers){
+void send_key(int key, int modifiers){
   #ifdef DEBUG_ON
   Serial.println(F("SendKey:"));
   Serial.print(F(" key: "));
@@ -423,9 +387,9 @@ void sendkey(int key, int modifiers){
   if(key!=0){
     Keyboard.press(key);
   }
-  }
+}
 
-void releaseallkeys(void){
+void release_all_keys(void){
   #ifdef DEBUG_ON
   Serial.println(F("Release all keys"));
   #endif
@@ -433,8 +397,8 @@ void releaseallkeys(void){
   Keyboard.releaseAll();
 }
 
-//return 1 if strlong start by strshort and 0 if not
-int str_start(char*strlong,char const*strshort){
+//return 1 if strlong starts with strshort and 0 if not
+int str_starts_with(char* strlong, char const* strshort){
   int i,j=1;
   for(i=0;i<strlen(strshort);i++){
     if(strlong[i]!=strshort[i]) j=0;
@@ -454,17 +418,15 @@ void process_new_line(void){
   #endif
 }
 
-// Debug functions
-
 #ifdef DEBUG_ON
 void print_ram(void) {
   Serial.print(availableMemory());
   Serial.println(F(" bytes free of 2560 (RAM)"));
 }
-// this function return the number of bytes currently free in RAM
+
+// this function returns the number of bytes currently free in RAM
 int availableMemory() {
   int size = 2560;
-  
   byte *buf;
 
   while ((buf = (byte *) malloc(--size)) == NULL);
@@ -474,5 +436,4 @@ int availableMemory() {
   return size;
 }
 #endif
-
 
